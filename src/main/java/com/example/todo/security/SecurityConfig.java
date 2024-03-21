@@ -40,7 +40,6 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(requests -> requests
                         .requestMatchers("api/auth/**").permitAll()
-                        .requestMatchers("/getToDo").hasRole("USER")
                         .anyRequest().authenticated())
                 .httpBasic(httpBasic -> {});
 
