@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
@@ -25,10 +28,18 @@ public class ToDoController {
     private ToDoService todoService;
 
     @GetMapping("/getToDo")
-    public ResponseEntity<?> getAllToDo(){
-        List<ToDoDTO> toDoList = todoService.getAllToDo();
-        return new ResponseEntity<>(toDoList, !toDoList.isEmpty() ? HttpStatus.OK : HttpStatus.NOT_FOUND);
+    public ResponseEntity<?> getAllToDo() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() &&
+                authentication.getAuthorities().contains(new SimpleGrantedAuthority("USER"))) {
+            List<ToDoDTO> toDoList = todoService.getAllToDo();
+            return new ResponseEntity<>(toDoList, !toDoList.isEmpty() ? HttpStatus.OK : HttpStatus.NOT_FOUND);
+        } else {
+            // Handle unauthorized access (e.g., return 403 Forbidden)
+            return new ResponseEntity<>("Unauthorized access", HttpStatus.FORBIDDEN);
+        }
     }
+
 
     @PostMapping("/addTodo")
     public ResponseEntity<?> createToDo(@RequestBody ToDoDTO todoDTO){
