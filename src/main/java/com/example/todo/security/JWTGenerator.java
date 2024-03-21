@@ -18,11 +18,13 @@ public class JWTGenerator {
 
     public String generateToken(Authentication authentication) {
         String username = authentication.getName();
+        String role = authentication.getAuthorities().toArray()[0].toString();
         Date currentDate = new Date();
         Date expireDate = new Date(currentDate.getTime() + SecurityConstants.JWT_EXPIRATION);
 
         String token = Jwts.builder()
                 .setSubject(username)
+                .claim("role", role)
                 .setIssuedAt( new Date())
                 .setExpiration(expireDate)
                 .signWith(key,SignatureAlgorithm.HS512)
@@ -38,6 +40,15 @@ public class JWTGenerator {
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
+    }
+
+    public String getRoleFromJWT(String token){
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("role",String.class);
     }
 
     public boolean validateToken(String token) {
